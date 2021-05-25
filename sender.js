@@ -1,66 +1,56 @@
 'use strict'
 
-const PeerId = require('peer-id')
-const PeerInfo = require('peer-info')
-const Node = require('./libp2p_bundle')
+const { NOISE } = require('libp2p-noise')
+const Libp2p = require('libp2p')
+const { multiaddr } = require('multiaddr')
+const peerId = require('peer-id')
+const TCP = require('libp2p-tcp')
+const WebSockets = require('libp2p-websockets')
+const WebRTCDirect = require('libp2p-webrtc-direct')
+const MPLEX = require('libp2p-mplex')
+const addr = multiaddr('/ip4/127.0.0.1/tcp/49180/')
 const pull = require('pull-stream')
 const Pushable = require('pull-pushable')
 const p = Pushable();
 const async = require('async');
+const pipe = require('it-pipe')
 
-async.parallel([
-    (callback) => {
-        PeerId.createFromJSON(require('./ids/senderID'), (err, senderPeerId) => {
-            if (err) {
-                throw err
-            }
-            callback(null, senderPeerId)
-        })
-    },
-    (callback) => {
-        PeerId.createFromJSON(require('./ids/receiverID'), (err, receiverPeerId) => {
-            if (err) {
-                throw err
-            }
-            callback(null, receiverPeerId)
-        })
-    }
-], (err, ids) => {
-    if (err) throw err
-    const senderPeerId=ids[0]
-    const senderPeerInfo = new PeerInfo(senderPeerId)
-    senderPeerInfo.multiaddrs.add('/ip4/127.0.0.1/tcp/0')
-    const nodeDialer = new Node({ peerInfo: senderPeerInfo })
-
-    const receiverPeerId = ids[1]
-    const receiverPeerInfo = new PeerInfo(receiverPeerId)
-    receiverPeerInfo.multiaddrs.add('/ip4/127.0.0.1/tcp/10333')
-    nodeDialer.start((err) => {
-        if (err) { throw err }
-        console.log('Sender ready, listening on: ');
-
-        senderPeerInfo.multiaddrs.forEach((ma) => {
-            console.log(ma.toString() + '/p2p/' + senderPeerId.toB58String())
-        })
-
-        nodeDialer.dialProtocol(receiverPeerInfo, '/chat/1.0.0', (err, conn) => {
-            if (err) { throw err }
-            console.log('\n Sender dialed to Receiver on protocol: /chat/1.0.0 Type a message')
-            // Write operation. Data sent as a buffer
-            pull(p, conn)
-            // Sink, data converted from buffer to utf8 string
-            pull(
-                conn,
-                pull.map((data) => {
-                    return data.toString('utf8').replace('\n', '')
-                }),
-                pull.drain(console.log)
-            )
-
-            process.stdin.setEncoding('utf8')
-            process.openStdin().on('data', (chunk) => {
-                p.push(chunk.toString())                
-            })
-        })
+const createNode = async () => {
+  const node = await Libp2p.create({
+        addresses: {
+          // To signal the addresses we want to be available, we use
+          // the multiaddr format, a self describable address
+          listen: ['/ip4/0.0.0.0/tcp/0']
+        },
+        modules: {
+          transport: [TCP, WebSockets, WebRTCDirect],
+          connEncryption: [NOISE],
+          streamMuxer: [MPLEX]
+        }
     })
-})
+
+    await node.start()
+    return node
+}
+
+
+;(async () => {
+    const sender = await createNode();
+    console.log('node has started (true/false):', sender.isStarted())
+    //let receiverpeerId = peerId.createFromB58String("QmQHLaRPzt52AAcFXQ7XxqCxipZxsxn8thDgvsNiUWgpnJ")
+    //sender.peerStore.addressBook.set(receiverpeerId, addr)
+    console.log('Sender ready, listening on: ');
+    sender.multiaddrs.forEach((ma) => {
+        console.log(ma.toString() + '/p2p/' + sender.peerId.toB58String())
+    })
+
+    try{ 
+        const { stream: stream2 } = await sender.dialProtocol(multiaddr("/ip4/127.0.0.1/tcp/9090/http/p2p-webrtc-direct/p2p/QmQt4wBm1L2XEFeqp2885NEvqsAjAvKmGNgpkhQBhLB5so"), '/print')
+          await pipe(
+            ['EPITELOUs'],
+            stream2
+        )
+    } catch (err) {
+        console.log('node 3 failed to dial to node 1 with:', err.message)
+    }
+})();
