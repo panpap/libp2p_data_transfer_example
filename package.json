@@ -1,0 +1,21 @@
+{
+  "name": "water",
+  "version": "1.0.0",
+  "description": "",
+  "main": [
+    "sender.js",
+    "receiver.js"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "libp2p-mplex": "^0.8.5",
+    "libp2p-secio": "^0.11.1",
+    "pull-pushable": "^2.2.0",
+    "pull-stream": "^3.6.14"
+  }
+}
