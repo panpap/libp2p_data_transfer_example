@@ -13,6 +13,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@nodeutils/defaults-deep": "^1.1.0",
+    "libp2p": "^0.31.5",
     "libp2p-mplex": "^0.8.5",
     "libp2p-secio": "^0.11.1",
     "pull-pushable": "^2.2.0",
