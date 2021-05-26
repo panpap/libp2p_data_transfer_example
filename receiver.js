@@ -1,28 +1,6 @@
 'use strict'
-
-const { NOISE } = require('libp2p-noise')
-const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
-const WebSockets = require('libp2p-websockets')
-const WebRTCDirect = require('libp2p-webrtc-direct')
-const MPLEX = require('libp2p-mplex')
 const pipe = require('it-pipe')
-
-const createNode = async () => {
-  const node = await Libp2p.create({
-        addresses: {
-          listen: ['/ip4/0.0.0.0/tcp/0', '/ip4/127.0.0.1/tcp/10000/ws', '/ip4/127.0.0.1/tcp/9090/http/p2p-webrtc-direct']
-        },
-        modules: {
-          transport: [TCP, WebSockets, WebRTCDirect],
-          connEncryption: [NOISE],
-          streamMuxer: [MPLEX]
-        }
-    })
-
-    await node.start()
-    return node
-}
+const common = require('./common.js');
 
 function print ({ stream }) {
   pipe(
@@ -37,7 +15,9 @@ function print ({ stream }) {
 
 
 ;(async () => {
-    const receiver = await createNode()
+    const receiver = await common.createNode(['/ip4/0.0.0.0/tcp/0', 
+                                        '/ip4/127.0.0.1/tcp/10000/ws', 
+                                        '/ip4/127.0.0.1/tcp/9090/http/p2p-webrtc-direct'])
     console.log('node has started (true/false):', receiver.isStarted())
     
     receiver.on('peer:connect', (peerInfo) => {

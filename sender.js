@@ -1,55 +1,41 @@
 'use strict'
 
-const { NOISE } = require('libp2p-noise')
-const Libp2p = require('libp2p')
-const { multiaddr } = require('multiaddr')
-const TCP = require('libp2p-tcp')
-const WebSockets = require('libp2p-websockets')
-const WebRTCDirect = require('libp2p-webrtc-direct')
-const MPLEX = require('libp2p-mplex')
 const pipe = require('it-pipe')
 const fs = require('fs')
+const common = require('./common.js');
+const { multiaddr } = require('multiaddr')
 
-const createNode = async () => {
-  const node = await Libp2p.create({
-        addresses: {
-          listen: ['/ip4/0.0.0.0/tcp/0']
-        },
-        modules: {
-          transport: [TCP, WebSockets, WebRTCDirect],
-          connEncryption: [NOISE],
-          streamMuxer: [MPLEX]
-        }
-    })
-
-    await node.start()
-    return node
+function getReceiver(){
+    if (process.argv.length < 3)
+        throw new Error("Receiver's multiaddress argument not given")
+    return process.argv.slice(2)[0];
 }
 
 
 (async () => {
-    if (process.argv.length < 3)
-        throw new Error("Receiver's multiaddress argument not given")
-    const addr = process.argv.slice(2)[0];
 
-    const sender = await createNode();
-    console.log('node has started (true/false):', sender.isStarted())
+    const addr = getReceiver() 
+    const sender = await common.createNode(['/ip4/0.0.0.0/tcp/0']);
+    console.log('> Sender has started (true/false):', sender.isStarted())
 
-    console.log('Looking to connect with:', addr)
+    console.log('> Looking to connect with:', addr)
     var myFile = fs.readFileSync("message.txt", 'utf8');
 
-    console.log('Sender ready, listening on: ');
-    sender.multiaddrs.forEach((ma) => {
-        console.log(ma.toString() + '/p2p/' + sender.peerId.toB58String())
-    })
+    const latency = await sender.ping(addr)
+    console.log("Receiver pinged in", latency,'ms')
+    try{
 
-    try{ 
         const { stream: outstream } = await sender.dialProtocol(multiaddr(addr), '/print')
         await pipe([myFile], outstream)
-        console.log("\nMessage sent!")
+        console.log("\n> Message sent!")
     } catch (err) {
-        console.log('node 3 failed to dial to node 1 with:', err.message)
+        console.log('Error: Sender failed to dial to Receiver with:', err.message)
     }
-    //await sender.stop()
-    //process.exit(0)
+    const stop = async () => {
+        // stop sender gently and close connection
+        await sender.stop()
+        console.log('\n> Node stopped')
+        process.exit(0)
+    }
+    process.on('SIGINT', stop)
 })();
