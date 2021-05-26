@@ -2,13 +2,10 @@
 
 const { NOISE } = require('libp2p-noise')
 const Libp2p = require('libp2p')
-const pull = require('pull-stream')
-const Pushable = require('pull-pushable')
 const TCP = require('libp2p-tcp')
 const WebSockets = require('libp2p-websockets')
 const WebRTCDirect = require('libp2p-webrtc-direct')
 const MPLEX = require('libp2p-mplex')
-const p = Pushable()
 const pipe = require('it-pipe')
 
 const createNode = async () => {
