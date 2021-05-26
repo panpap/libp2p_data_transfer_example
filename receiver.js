@@ -11,8 +11,6 @@ const pipe = require('it-pipe')
 const createNode = async () => {
   const node = await Libp2p.create({
         addresses: {
-          // To signal the addresses we want to be available, we use
-          // the multiaddr format, a self describable address
           listen: ['/ip4/0.0.0.0/tcp/0', '/ip4/127.0.0.1/tcp/10000/ws', '/ip4/127.0.0.1/tcp/9090/http/p2p-webrtc-direct']
         },
         modules: {
@@ -31,7 +29,7 @@ function print ({ stream }) {
     stream,
     async function (source) {
       for await (const msg of source) {
-        console.log(msg.toString())
+        console.log("Message received:",msg.toString().length,"chars in total")
       }
     }
   )
@@ -44,7 +42,7 @@ function print ({ stream }) {
     
     receiver.on('peer:connect', (peerInfo) => {
         console.log('Receiver found Server  on: '+ receiver.peerId.toB58String());
-        console.log('\n Receiver waiting for message from Server ')
+        console.log('\nReceiver waiting for message from Server')
     })
 
     receiver.handle('/print', print)
@@ -54,5 +52,5 @@ function print ({ stream }) {
         console.log(ma.toString() + '/p2p/' + receiver.peerId.toB58String())
     })
 
-    console.log('\n Receiver trying to connect with ldsls');
+    console.log('\nReceiver trying to connect with Sender');
 })();
