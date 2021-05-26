@@ -18,6 +18,7 @@
     "libp2p-noise": "^3.0.0",
     "libp2p-tcp": "^0.15.4",
     "libp2p-webrtc-direct": "^0.6.0",
-    "libp2p-websockets": "^0.15.7"
+    "libp2p-websockets": "^0.15.7",
+    "package.json": "^2.0.1"
   }
 }
