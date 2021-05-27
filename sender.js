@@ -6,7 +6,7 @@ const common = require('./common.js')
 const { multiaddr } = require('multiaddr')
 var crypto = require("crypto")
 
-const BYTESVOL = 26214400
+const BYTESVOL = 26214400 //set 256MB as the size for the random data
 const RUNS = 10
 
 /**
