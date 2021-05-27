@@ -8,6 +8,10 @@ const WebRTCDirect = require('libp2p-webrtc-direct')
 const MPLEX = require('libp2p-mplex')
 const pipe = require('it-pipe')
 
+/**
+*   Asynchronous function for libp2p node creation. Gets as input a 
+*   listeners array and returns a new (started) libp2p node.
+*/
 const createNode = async (listeners) => {
   const node = await Libp2p.create({
         addresses: {
