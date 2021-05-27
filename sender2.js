@@ -6,7 +6,7 @@ const { collect } = require('streaming-iterables')
 var crypto = require("crypto")
 const WebSockets = require('libp2p-websockets')
 
-const BYTESVOL = 265794176
+const BYTESVOL = 26176
 
 function throughputCalc(time, bytes){
     return (bytes/1024/1024/1024*8)/(time/1000)
@@ -21,8 +21,8 @@ const upgrader = {
 
 ;(async () => {
 var addr
-const type = new TCP({ upgrader });  addr = '/ip4/127.0.0.1/tcp/9092'
-////const type = new WebRTCDirect({ upgrader }); addr = '/ip4/127.0.0.1/tcp/9092/http/p2p-webrtc-direct/'
+const type = new TCP({ upgrader });  addr = '/ip4/192.168.1.100/tcp/9092'
+//const type = new WebRTCDirect({ upgrader }); addr = '/ip4/192.168.1.100/tcp/9092/http/p2p-webrtc-direct/'
 //const type = new WebSockets({ upgrader });  addr = '/ip4/127.0.0.1/tcp/10000/ws'
 
 
