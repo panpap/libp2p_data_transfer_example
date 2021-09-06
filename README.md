@@ -1,4 +1,4 @@
-## Instal
+## Install
 	`npm install`
 
 ## Usage
